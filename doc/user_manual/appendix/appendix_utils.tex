@@ -441,3 +441,41 @@ The time taken to get the file depends on the user's internet provider. The file
 To create a file loadable in COMPASS, and after installing the COMPASS utils, the user can run the 'test.sh' script found in the utils directory. \\
 
 The script expects to find an ADS-B exchange database in the current working directory and generates a SQLite3 database ready to be loaded into COMPASS containing the traffic between 08Z and 09Z of the given day.
+
+\subsection{Generating view points from AOC (ARTAS Output Comparator) results}
+
+The AOC (ARTAS Output Comparator) tool allows comparing output (in ASTERIX categories 030 and 062) from the ARTAS System. The AOC is a product of EUROCONTROL. A description of AOC is out of scope, for further information please consult its manual or contact CAMOS (e-mail address: \href{mailto:camos@eurocontrol.int}{camos@eurocontrol.int}).
+
+The AOC output can be vizualized using COMPASS view points (refer to section \nameref{sec:view_points}). To generate view points from AOC output use preferably the script \textbf{aoc_vp.sh} which handles most of the details, it is also possible to use the script \textbf{aoc_vp.py} which does the real work but one needs to know how to launch the AOC tool and produce the output required. \\
+
+The \textbf{aoc_vp.sh} script expects two mandatory (final format) file names representing the reference and test runs.
+
+\begin{lstlisting}
+$ aoc_vp.sh -h
+USAGE: aoc_vp.sh -r <reference> -t <test> [-R <name>] [-T <name>] [-d <date>] [-s <time>] [-h]
+   -r <reference> ::= reference file name (final format)
+   -R <name> ::= reference tracker name (default: REF)
+   -t <test> ::= test file name (final format)
+   -T <name> ::= test tracker name (default: TST)
+   -d <date> ::= reference and test date (format: yyyy-mm-dd)
+   -s <time> ::= difference in time between test and reference runs (seconds)
+   -h     This help
+\end{lstlisting}
+
+The \textbf{aoc_vp.py} is a python 3 script expecting two mandatory AOC output files so called 'helper file' (extension 'hlp'), through the switch \textbf{-ah}, and the output file, through the switch \textbf{-ao}, which is the AOC output sent to the standard output stream.
+
+\begin{lstlisting}
+$ aoc_vp.py -h
+usage: aoc_vp.py [-h] -ah AH -ao AO [-o O] [-sd SD] [-r R] [-t T]
+
+COMPASS view points generator given AOC (ARTAS Output Comparator) results
+
+optional arguments:
+  -h, --help  show this help message and exit
+  -ah AH      AOC helper filename (*.hlp)
+  -ao AO      AOC output filename (*.out)
+  -o O        view points filename (default: aoc_view_points.json)
+  -sd SD      start date
+  -r R        reference tracker name (default: REF)
+  -t T        test tracker name (default: TST)
+\end{lstlisting}
