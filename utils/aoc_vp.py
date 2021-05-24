@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+import argparse
+import sys
+import re
+import json
+
 #
 # This file is part of OpenATS COMPASS.
 #
@@ -16,12 +21,6 @@
 # You should have received a copy of the GNU General Public License
 # along with COMPASS. If not, see <http://www.gnu.org/licenses/>.
 #
-
-import argparse
-import sys
-import io
-import re
-import json
 
 def hms2sec(h,m,s,ms):
     return (h*60+m)*60+s+ms/1000
@@ -53,7 +52,7 @@ time_start_end = re.compile(r'(\d{2}):(\d{2}):(\d{2})\.(\d{3})\s+UTC\s+\.\.\.\s+
 time_duration = re.compile(r'\s+(\d{2}):(\d{2}):(\d{2})\.(\d{3})\s+')
 
 # 'out' file deviations
-short_track = re.compile(r'Short (\w+) track #(\d+) \((\w+) track #(\d+) \[A:([^]]+)\] \[S:([^]]+)\]\) starting near (\S+) UTC \((.+)\)$')
+short_track = re.compile(r'Short (\w+) track #(\d+) \((\w+) track #(\d+) \[A:([^]]+)\] \[S:([^]]+)\]\) starting near (\S+) UTC \(diff=([\d.]+)\s+seconds\)$')
 
 # 'hlp' file deviations
 extra_track = re.compile(r'Extra test track #(\d+)\.(\d+)\s+Time of [\w ]+: (\S+) UTC\s+Time of [\w ]+: (\S+) UTC\s+')
@@ -69,9 +68,6 @@ track_reported = re.compile(r'\s+reported ([\w.]+)=(.+); expected (.+)\s+REF')
 track_unexpected = re.compile(r'\s+unexpected (.+)\s+REF')
 get_times = re.compile(r'\[(\S+)\]')
 
-#
-# main AOC parser class
-#
 class aoc_parser:
     def __init__(self, parms, dct):
         self.__dct = dct
@@ -310,7 +306,7 @@ class aoc_parser:
             "name": "DEV #{}".format(self.__id + 1),
             "text": None,
             "time": None,
-            "time_window": 10,
+            "time_window": None,
             "db_objects": [
                 "Tracker"
             ],
@@ -343,9 +339,10 @@ class aoc_parser:
                 location += ' mS:' + res[0][5]
             location += ' ' + res[0][6] + ' UTC'
 
-            template.update({'text':'{} {} to {} {}\n{}\n{}'.format(t1,res[0][1],t2,res[0][3],res[0][7], location)})
+            template.update({'text':'{} {} to {} {}\ndiff={} seconds\n{}'.format(t1,res[0][1],t2,res[0][3],res[0][7], location)})
             [h, m, s, ms] = list(map(lambda x: int(x), re.split(':|\.', res[0][6])))
             template.update({'time':hms2sec(h,m,s,ms)})
+            template.update({'time_window':float(res[0][7])})
             #template['filters']['Time of Day'].update({'Time of Day Minimum':})
             #template['filters']['Time of Day'].update({'Time of Day Maximum':})
             template['filters']['Tracker Track Number'].update({t1 + ' track_num':res[0][1]})
