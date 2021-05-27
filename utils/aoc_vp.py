@@ -61,6 +61,7 @@ get_track_candidates = re.compile(r'searching \.\.\..*?(\S+)\s+candidate[s]?\s+f
 get_trkNr = re.compile(r'#(\d+)\.')
 get_modeA = re.compile(r'SSR mode 3/A code; value=0(\d+)')
 get_modeS = re.compile(r'aircraft address; value=0x(\S+)')
+get_modeC = re.compile(r'SSR mode C code; value=(\S+)')
 
 deviation = re.compile(r'^DEV\s+#(\d+):\s+(\S+)\s+(\S+)')
 track_deviation = re.compile(r'Test track #(\d+)\.(\d+) \(reference track #(\d+)\.(\d+)\) near (\d{2}):(\d{2}):(\d{2})\.(\d{3}) UTC:\s+(\w+)\s+')
@@ -237,11 +238,18 @@ class aoc_parser:
             modeS = get_modeS.findall(self.__deviation)
             if modeS:
                 context += '; aircraft address:0x{}'.format(modeS[0])
+            modeC = get_modeC.findall(self.__deviation)
+            if modeC:
+                context += '; mode C:{}'.format(modeC[0])
 
             if candidates[0] == '1':
                 template.update({'type':'Extra Track dubious'})
             elif candidates[0] != 'no':
                 template.update({'type':'Extra Track dubious multiple'})
+                if modeA:
+                   template['filters'].update({'Mode 3/A Codes':{'Mode 3/A Codes Values':modeA[0]}})
+                if modeS:
+                   template['filters'].update({'Target Address':{'Target Address Values':modeS[0]}})
 
             template.update({'text':self.__devpar['tn'] + ' {}:({}.{})\n{}'.format(extra[0][0],extra[0][0],extra[0][1],context)})
 
@@ -289,11 +297,18 @@ class aoc_parser:
             modeS = get_modeS.findall(self.__deviation)
             if modeS:
                 context += '; aircraft address:0x{}'.format(modeS[0])
+            modeC = get_modeC.findall(self.__deviation)
+            if modeC:
+                context += '; mode C:{}'.format(modeC[0])
 
             if candidates[0] == '1':
                 template.update({'type':'Missing Track dubious'})
             elif candidates[0] != 'no':
                 template.update({'type':'Missing Track dubious multiple'})
+                if modeA:
+                   template['filters'].update({'Mode 3/A Codes':{'Mode 3/A Codes Values':modeA[0]}})
+                if modeS:
+                   template['filters'].update({'Target Address':{'Target Address Values':modeS[0]}})
 
             template.update({'text':self.__devpar['rn'] + ' {}:({}.{})\n{}'.format(missing[0][0],missing[0][0],missing[0][1],context)})
 
